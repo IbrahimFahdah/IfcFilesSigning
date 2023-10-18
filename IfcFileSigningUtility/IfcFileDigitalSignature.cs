@@ -25,7 +25,11 @@ namespace IfcFileSigningUtility
             {
                 writer.WriteLine($"/*SignedBy:{singatureInfo.SignedBy}, Signature:{singatureInfo.Signature}*\\");
                 while (!reader.EndOfStream)
-                    writer.WriteLine(reader.ReadLine());
+                {
+                    writer.Write(reader.ReadLine());
+                    if (!reader.EndOfStream)
+                        writer.WriteLine();
+                }
             }
             File.Copy(tempfile, filename, true);
         }
