@@ -75,7 +75,6 @@ namespace IfcFileSigningCommon
             var str2 = sec2.Substring("ENDSEC;".Length + signSectionEndIndex);
             var originalData = sec1+ str2;
 
-            File.WriteAllText("C:\\Users\\Ibrahim\\Desktop\\IfcSigningTest\\d.txt", sec1);
             var buffer = Encoding.ASCII.GetBytes(originalData);
 
             return buffer;
