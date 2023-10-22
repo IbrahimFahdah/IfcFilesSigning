@@ -1,5 +1,6 @@
 ﻿using IfcFileSigningCommon;
 using System.Security.Cryptography;
+using System.Text;
 
 namespace IfcFileSigningUtility
 {
@@ -10,6 +11,23 @@ namespace IfcFileSigningUtility
         /// </summary>
         const string privateKey = "<RSAKeyValue><Modulus>w7xfeGEb7y8/dSXDKyohwXl8tgDJW0Fr/9gTpkgVwJtKlGVh6uN7BtrieJHCGTizNGGueSqQoN9t531cMQXPadg/b684sABermIOhbRq4MmEtjX2knxSJKU7SDKM3pAGmDRlbxhgrzHJL8sfe//TezZxp1NDT+Vwegs0jGFs2KU=</Modulus><Exponent>AQAB</Exponent><P>14OQBBZfjtNTJE38uhvFukY8FUgk7Rks9Ca5PCLGd7KwYFzUkA3laG34Ys5L40LQlL+gg3jXohMpRJlHzb5oew==</P><Q>6IGl5Z98l0U1OLKDJoTTqb0wBtT7j4X/WpDt7OeH8EKVvMa26vSBi4ZxvSI2eH2vfz3Kr/wSrRcEuMar9RtJXw==</Q><DP>Y4whucGb4h07Ckn7svuhGanXlvz8EYjPevdoGJ73jdK8Jca7aM8CaHpjgUBJTXBPaGYbfp8S+4peRZGH2UFagQ==</DP><DQ>wGR3uHiuiiX0kkP1DmyfETfBhAW9W9gPowuGNaCo9gDDEwCD4AwPHjtT5qNm23F1RR8Gl3VIpv4DJDsRk7LOlQ==</DQ><InverseQ>Z3Lcx28aNgo5NPf9BPu7kO/GIXFMNF2VbkojSDzJBTHvyAAmWie3lGILyA88IikNGJT+dKNEqdZP/kcY1lxDPA==</InverseQ><D>mS9hoDqPvB9EEJCfL7bneB12BpKTA4It3arjpe0gaP6f3YeCnGuvquu+9hFM0KRZS5NvEpDHY7+4qcSoVA1yBst/Nhtnihl3cOXf1Zus4TeFedLFJLyy+jvrBCsHLX7OH2roPBS65trNHG4ec21/FWAfi7Zwt3xmQ7tHOLJSA7k=</D></RSAKeyValue>";
 
+        public static bool IsIfcFileSigned(string filename)
+        {
+            using (var reader = new StreamReader(filename))
+            {
+                while (!reader.EndOfStream)
+                {
+                    var line = reader.ReadLine();
+                    if (line != null && line.StartsWith("SIGNATURE;"))
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
         /// <summary>
         /// Signs an IFC file by adding the signature to the file top.
         /// </summary>
@@ -19,18 +37,19 @@ namespace IfcFileSigningUtility
             var hash = Shared.CalculateIfcFileChecksum(filename);
             var singatureInfo = CreateSignature(hash, "Signed By IXF");
 
+            var sb = new StringBuilder();
+            sb.AppendLine("SIGNATURE;");
+            sb.AppendLine($"SignedBy({singatureInfo.SignedBy});");
+            sb.AppendLine("ALGORITHM(RSA);");
+            sb.AppendLine($"PUBLIC_KEY({IfcSignatureValidator.PublicKey});");
+            sb.AppendLine($"SIGNATURE_DATA({singatureInfo.Signature});");
+            sb.AppendLine("ENDSEC;");
+            sb.Append("END-ISO-10303-21;");
+            var data = File.ReadAllText(filename, Encoding.UTF8);
+            data = data.Replace("END-ISO-10303-21;", sb.ToString());
+
             string tempfile = Path.GetTempFileName();
-            using (var writer = new StreamWriter(tempfile))
-            using (var reader = new StreamReader(filename))
-            {
-                writer.WriteLine($"/*SignedBy:{singatureInfo.SignedBy}, Signature:{singatureInfo.Signature}*\\");
-                while (!reader.EndOfStream)
-                {
-                    writer.Write(reader.ReadLine());
-                    if (!reader.EndOfStream)
-                        writer.WriteLine();
-                }
-            }
+            File.WriteAllText(tempfile, data);
             File.Copy(tempfile, filename, true);
         }
 

@@ -16,6 +16,12 @@ namespace IfcFileSigner
             {
                 var dlg = openFileDialog1.ShowDialog(this);
                 var fileName = openFileDialog1.FileName;
+                if (IfcFileDigitalSignature.IsIfcFileSigned(fileName))
+                {
+                    MessageBox.Show($"File already signed.", "Signature", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+
                 IfcFileDigitalSignature.SignIfcFile(fileName);
                 MessageBox.Show($"File Signed Successfully.", "Signature", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
