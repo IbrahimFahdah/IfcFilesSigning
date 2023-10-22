@@ -38,13 +38,14 @@ namespace IfcFileSigningUtility
             var singatureInfo = CreateSignature(hash, "Signed By IXF");
 
             var sb = new StringBuilder();
+            sb.AppendLine("END-ISO-10303-21;");
             sb.AppendLine("SIGNATURE;");
             sb.AppendLine($"SignedBy({singatureInfo.SignedBy});");
             sb.AppendLine("ALGORITHM(RSA);");
             sb.AppendLine($"PUBLIC_KEY({IfcSignatureValidator.PublicKey});");
             sb.AppendLine($"SIGNATURE_DATA({singatureInfo.Signature});");
-            sb.AppendLine("ENDSEC;");
-            sb.Append("END-ISO-10303-21;");
+            sb.Append("ENDSEC;");
+            
             var data = File.ReadAllText(filename, Encoding.UTF8);
             data = data.Replace("END-ISO-10303-21;", sb.ToString());
 
