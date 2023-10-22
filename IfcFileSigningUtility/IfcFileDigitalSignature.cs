@@ -45,7 +45,7 @@ namespace IfcFileSigningUtility
             sb.AppendLine($"PUBLIC_KEY({IfcSignatureValidator.PublicKey});");
             sb.AppendLine($"SIGNATURE_DATA({singatureInfo.Signature});");
             sb.Append("ENDSEC;");
-            
+
             var data = File.ReadAllText(filename, Encoding.UTF8);
             data = data.Replace("END-ISO-10303-21;", sb.ToString());
 

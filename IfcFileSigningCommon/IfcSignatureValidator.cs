@@ -69,11 +69,11 @@ namespace IfcFileSigningCommon
         public static byte[] GetIFCDataWithoutSignature(string filename)
         {
             var data = File.ReadAllText(filename, Encoding.UTF8);
-            var sec1 = data.Substring(0, data.IndexOf("SIGNATURE;")-2);
+            var sec1 = data.Substring(0, data.IndexOf("SIGNATURE;") - 2);
             var sec2 = data.Substring(data.IndexOf("SIGNATURE;"));
             var signSectionEndIndex = sec2.IndexOf("ENDSEC;");
             var str2 = sec2.Substring("ENDSEC;".Length + signSectionEndIndex);
-            var originalData = sec1+ str2;
+            var originalData = sec1 + str2;
 
             var buffer = Encoding.ASCII.GetBytes(originalData);
 
